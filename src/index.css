@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Base iPad/Tablet configuration to prevent unwanted text selection and scrolling behaviors */
+body {
+  margin: 0;
+  padding: 0;
+  overscroll-behavior-y: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
