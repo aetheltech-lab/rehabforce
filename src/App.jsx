@@ -8,6 +8,7 @@ import LiveTraining from './screens/LiveTraining';
 import SessionResults from './screens/SessionResults';
 import RecommendationDecision from './screens/RecommendationDecision';
 import Login from './screens/Login';
+import Settings from './screens/Settings';
 
 // Phase 1 UI scaffolding complete[cite: 1]
 
@@ -54,6 +55,8 @@ export default function App() {
         return <SessionResults navigateTo={navigateTo} athleteId={activeAthleteId} />;
       case 'RecommendationDecision': 
         return <RecommendationDecision navigateTo={navigateTo} athleteId={activeAthleteId} />;
+      case 'Settings': 
+        return <Settings navigateTo={navigateTo} clinicianId={activeClinicianId} />;
       default: 
         return <Dashboard navigateTo={navigateTo} />;
     }

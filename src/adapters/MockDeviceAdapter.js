@@ -1,7 +1,7 @@
 /**
- * MockDeviceAdapter for RehabForce Phase 1
- * Simulates a BLE connection to bilateral smart insoles.
- * Normalizes data into the common RehabForce schema as defined in the technical specification.
+ * RehabForce Mock Device Adapter
+ * Hardware-agnostic simulator for Phase 1 clinical logic validation.
+ * Implements strict Data Quality Gating and Simulated Hardware Failures.
  */
 class MockDeviceAdapter {
   constructor() {
@@ -9,99 +9,168 @@ class MockDeviceAdapter {
     this.isCalibrated = false;
     this.streamInterval = null;
     
-    // Simulated device state
+    // Active failure state for simulated hardware testing
+    this.activeFailure = 'NONE'; // NONE, LEFT_DISCONNECT, RIGHT_DISCONNECT, SYNC_ERROR, STALE_DATA, CALIBRATION_FAIL
+
+    // Isolated Hardware Status
     this.deviceState = {
-      leftBattery: 100,
-      rightBattery: 98,
-      signalQuality: 'Excellent',
-      firmware: 'v1.2.3 (Mock)'
+      leftConnected: false,
+      rightConnected: false,
+      leftBattery: 0,
+      rightBattery: 0,
+      signalQuality: 'DISCONNECTED', // EXCELLENT, POOR, DISCONNECTED
+      syncStatus: 'NOT_ASSESSED',    // SYNCED, OUT_OF_SYNC, NOT_ASSESSED
+      dataQuality: 'NOT_ASSESSED'    // VALID, INVALID, NOT_ASSESSED
     };
   }
 
   /**
-   * Simulates connecting to the bilateral insoles.
-   * @returns {Promise<Object>} The connection status and device capabilities.
+   * Simulates the BLE connection process to bilateral sensors.
    */
   async connect() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        this.isConnected = true;
-        resolve({
-          success: true,
-          status: this.deviceState,
-          capabilities: ['force_l', 'force_r', 'loading_pct', 'sync_status']
-        });
-      }, 1500); // Simulate 1.5s BLE pairing delay
-    });
+    // Simulate connection delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    this.isConnected = true;
+    this.deviceState = {
+      leftConnected: true,
+      rightConnected: true,
+      leftBattery: 100,
+      rightBattery: 98,
+      signalQuality: 'EXCELLENT',
+      syncStatus: 'SYNCED',
+      dataQuality: 'NOT_ASSESSED' // Data quality is only assessed during active streaming
+    };
+
+    return { success: true, status: this.deviceState };
   }
 
   /**
-   * Simulates disconnecting the sensors safely.
+   * Gracefully disconnects and resets the hardware states.
    */
   async disconnect() {
-    this.stopStream();
     this.isConnected = false;
     this.isCalibrated = false;
-    return { success: true, message: 'Devices disconnected safely.' };
+    this.stopStream();
+    
+    this.deviceState = {
+      leftConnected: false,
+      rightConnected: false,
+      leftBattery: 0,
+      rightBattery: 0,
+      signalQuality: 'DISCONNECTED',
+      syncStatus: 'NOT_ASSESSED',
+      dataQuality: 'NOT_ASSESSED'
+    };
+    
+    return { success: true };
   }
 
   /**
-   * Simulates the 5-second static calibration phase.
-   * @returns {Promise<Boolean>} True if calibration is successful.
+   * Simulates the static 5-second calibration/zeroing workflow.
    */
   async calibrate() {
-    if (!this.isConnected) throw new Error('Cannot calibrate: Sensors not connected.');
+    if (this.activeFailure === 'CALIBRATION_FAIL') {
+      this.isCalibrated = false;
+      return false;
+    }
     
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        this.isCalibrated = true;
-        resolve(true);
-      }, 2000); // 2-second simulated calibration process
-    });
+    // Simulate the 5-second calibration hold
+    await new Promise(resolve => setTimeout(resolve, 5000));
+    this.isCalibrated = true;
+    return true;
   }
 
   /**
-   * Starts the high-frequency data stream.
-   * Target latency is <= 100ms update intervals.
-   * @param {Function} onData - Callback function receiving the normalized RehabForce data schema.
+   * High-frequency data stream simulating <=100ms BLE packets.
+   * Enforces the Data Quality Gate before yielding payload to the UI.
    */
-  startStream(onData) {
-    if (!this.isConnected) {
-      console.warn('Attempted to start stream without connection.');
-      return;
-    }
+  startStream(callback) {
+    if (this.streamInterval) clearInterval(this.streamInterval);
+
+    let tick = 0;
     
-    if (this.streamInterval) {
-      this.stopStream();
-    }
-
-    // Emit data every 100ms (10Hz) to satisfy the MVP low-latency requirement
     this.streamInterval = setInterval(() => {
-      // Generate a slight random fluctuation for realistic biomechanical data
-      const fluctuation = Math.floor(Math.random() * 5) - 2; 
-      const leftLoad = Math.min(Math.max(50 + fluctuation, 40), 60);
-      const rightLoad = 100 - leftLoad;
+      tick++;
 
-      // Normalized RehabForce Schema
-      const normalizedData = {
-        timestamp: Date.now(),
-        validity: 'VALID', // VALID, DEGRADED, or INVALID
-        leftLoadPct: leftLoad,
-        rightLoadPct: rightLoad,
-        absoluteDifference: Math.abs(leftLoad - rightLoad),
-        peakForceBW: (1.5 + (Math.random() * 0.2)).toFixed(2), // Simulated peak force in BW
-        deviceMetadata: {
-          syncStatus: 'OK',
-          quality: this.deviceState.signalQuality
-        }
+      // Base healthy biomechanical simulation (oscillating around 50/50)
+      let leftLoad = 50 + Math.sin(tick * 0.1) * 20;
+      let rightLoad = 50 - Math.sin(tick * 0.1) * 20;
+      let currentDataQuality = 'VALID';
+
+      // ==========================================
+      // SIMULATED HARDWARE FAILURE INJECTION
+      // ==========================================
+      switch (this.activeFailure) {
+        case 'LEFT_DISCONNECT':
+          leftLoad = 0;
+          this.deviceState.leftConnected = false;
+          this.deviceState.signalQuality = 'POOR';
+          currentDataQuality = 'INVALID';
+          break;
+          
+        case 'RIGHT_DISCONNECT':
+          rightLoad = 0;
+          this.deviceState.rightConnected = false;
+          this.deviceState.signalQuality = 'POOR';
+          currentDataQuality = 'INVALID';
+          break;
+          
+        case 'STALE_DATA':
+          // Freeze the load values to simulate dropped packets
+          leftLoad = 52; 
+          rightLoad = 48;
+          this.deviceState.signalQuality = 'POOR';
+          currentDataQuality = 'INVALID';
+          break;
+          
+        case 'SYNC_ERROR':
+          // Simulate L/R time skew causing artificial asymmetry
+          this.deviceState.syncStatus = 'OUT_OF_SYNC';
+          leftLoad = Math.random() * 100;
+          rightLoad = Math.random() * 100;
+          currentDataQuality = 'INVALID';
+          break;
+          
+        case 'NONE':
+        default:
+          this.deviceState.leftConnected = true;
+          this.deviceState.rightConnected = true;
+          this.deviceState.signalQuality = 'EXCELLENT';
+          this.deviceState.syncStatus = 'SYNCED';
+          break;
+      }
+
+      // ==========================================
+      // CLINICAL DATA QUALITY GATE
+      // Connection OK + Calibration OK + Sync OK -> VALID
+      // ==========================================
+      if (!this.isConnected || !this.isCalibrated) {
+        currentDataQuality = 'NOT_ASSESSED';
+      }
+
+      this.deviceState.dataQuality = currentDataQuality;
+
+      // Construct the normalized payload conforming to RehabForce internal schema
+      const payload = {
+        timestamp_sensor: Date.now(),
+        leftLoadPct: Math.max(0, Math.round(leftLoad)),
+        rightLoadPct: Math.max(0, Math.round(rightLoad)),
+        dataQuality: this.deviceState.dataQuality,
+        syncStatus: this.deviceState.syncStatus,
+        signalQuality: this.deviceState.signalQuality,
+        leftConnected: this.deviceState.leftConnected,
+        rightConnected: this.deviceState.rightConnected
       };
 
-      onData(normalizedData);
-    }, 100); 
+      // Yield normalized payload to the application
+      callback(payload);
+
+    }, 100); // 100ms simulation loop to mimic target hardware capability
   }
 
   /**
-   * Stops the live data stream.
+   * Safely kills the active data stream.
    */
   stopStream() {
     if (this.streamInterval) {
@@ -109,7 +178,16 @@ class MockDeviceAdapter {
       this.streamInterval = null;
     }
   }
+
+  /**
+   * Developer utility to trigger Nikos's requested testing scenarios on the fly.
+   * @param {string} eventType - 'NONE', 'LEFT_DISCONNECT', 'RIGHT_DISCONNECT', 'SYNC_ERROR', 'STALE_DATA', 'CALIBRATION_FAIL'
+   */
+  triggerSimulationEvent(eventType) {
+    console.warn(`[Hardware Simulator] Injecting Failure Event: ${eventType}`);
+    this.activeFailure = eventType;
+  }
 }
 
-// Export a singleton instance to be used across the application
+// Export a single instance to act as our centralized hardware singleton
 export const deviceAdapter = new MockDeviceAdapter();

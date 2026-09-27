@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { deviceAdapter } from '../adapters/MockDeviceAdapter';
+import { useTranslation } from 'react-i18next';
 
 export default function ConnectCalibrate({ navigateTo, athleteId }) {
+  const { t, i18n } = useTranslation();
   // Hardware connection states using the modular Device Adapter[cite: 1]
   const [isConnected, setIsConnected] = useState(deviceAdapter.isConnected);
   const [isConnecting, setIsConnecting] = useState(false);
@@ -57,18 +59,44 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
         <div>
           <button 
             onClick={() => navigateTo('AthleteProfile', { athleteId })}
-            className="text-blue-600 font-bold hover:underline mb-2 flex items-center gap-1 text-sm"
+            className="text-blue-600 font-bold hover:underline mb-2 flex items-center gap-1 text-sm rtl:flex-row-reverse"
           >
-            ← Back to Athlete Profile
+            {t('nav.back', '← Back')}
           </button>
           <div className="text-xs text-slate-500 uppercase tracking-widest font-semibold">
-            Dashboard &gt; Athletes &gt; {athleteId || 'ATH-001'} &gt; Connect & Calibrate
+            {t('nav.dashboard', 'Dashboard')} &gt; {t('nav.athletes', 'Athletes')} &gt; {athleteId || 'ATH-001'} &gt; {t('calibration.title', 'Connect & Calibrate')}
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-right">
+          
+          {/* Language Quick-Switcher Flags */}
+          <div className="flex items-center gap-3 mr-2 rtl:ml-2 rtl:mr-0 border-r rtl:border-l rtl:border-r-0 border-slate-200 pr-4 rtl:pl-4">
+            <button 
+              onClick={() => i18n.changeLanguage('en')} 
+              className={`w-7 h-5 overflow-hidden rounded-sm transition-all ${i18n.language.startsWith('en') ? 'opacity-100 drop-shadow-md scale-110 ring-2 ring-blue-500 ring-offset-1' : 'opacity-40 hover:opacity-80'}`} 
+              title="English"
+            >
+              <img src="https://flagcdn.com/gb.svg" alt="English" className="w-full h-full object-cover" />
+            </button>
+            <button 
+              onClick={() => i18n.changeLanguage('el')} 
+              className={`w-7 h-5 overflow-hidden rounded-sm transition-all ${i18n.language.startsWith('el') ? 'opacity-100 drop-shadow-md scale-110 ring-2 ring-blue-500 ring-offset-1' : 'opacity-40 hover:opacity-80'}`} 
+              title="Ελληνικά"
+            >
+              <img src="https://flagcdn.com/gr.svg" alt="Ελληνικά" className="w-full h-full object-cover" />
+            </button>
+            <button 
+              onClick={() => i18n.changeLanguage('ar')} 
+              className={`w-7 h-5 overflow-hidden rounded-sm transition-all ${i18n.language.startsWith('ar') ? 'opacity-100 drop-shadow-md scale-110 ring-2 ring-blue-500 ring-offset-1' : 'opacity-40 hover:opacity-80'}`} 
+              title="العربية"
+            >
+              <img src="https://flagcdn.com/sa.svg" alt="العربية" className="w-full h-full object-cover" />
+            </button>
+          </div>
+
+          <div className="text-right rtl:text-left">
             <p className="text-sm font-bold text-slate-900">Dr. Papadopoulos</p>
-            <p className="text-xs text-slate-500">Physiotherapist</p>
+            <p className="text-xs text-slate-500">{t('profile.physiotherapist', 'Physiotherapist')}</p>
           </div>
         </div>
       </header>
@@ -77,17 +105,17 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
       <div className="flex items-center justify-between bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
         <div className="flex items-center gap-2 text-blue-700 font-bold">
           <span className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-sm">1</span>
-          Connect Sensors
+          {t('calibration.step1', '1. Connect Sensors').replace('1. ', '')}
         </div>
         <div className="h-px bg-slate-300 flex-1 mx-4"></div>
         <div className={`flex items-center gap-2 font-bold ${isCalibrated ? 'text-emerald-700' : 'text-slate-500'}`}>
           <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm ${isCalibrated ? 'bg-emerald-100' : 'bg-slate-100'}`}>2</span>
-          Calibrate
+          {t('calibration.step2', '2. Calibrate Sensors').replace('2. ', '')}
         </div>
         <div className="h-px bg-slate-300 flex-1 mx-4"></div>
         <div className="flex items-center gap-2 text-slate-500 font-bold">
           <span className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-sm">3</span>
-          Verify & Check
+          {t('calibration.verifyCheck', '3. Verify & Check').replace('3. ', '')}
         </div>
       </div>
 
@@ -97,8 +125,8 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
         {/* Left Column: Device Connection */}
         <div className="col-span-4 flex flex-col gap-4">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex-1">
-            <h2 className="text-lg font-bold text-slate-800 mb-4">1. Connect Sensors</h2>
-            <p className="text-sm text-slate-600 mb-6">Ensure both insoles are connected and ready.</p>
+            <h2 className="text-lg font-bold text-slate-800 mb-4">{t('calibration.step1', '1. Connect Sensors')}</h2>
+            <p className="text-sm text-slate-600 mb-6">{t('calibration.step1Desc', 'Ensure both insoles are connected and ready.')}</p>
             
             {/* Left Insole Card */}
             <div className={`border p-4 rounded-lg mb-4 transition-colors ${isConnected ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50'}`}>
@@ -106,13 +134,13 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
                 <div className="flex items-center gap-2">
                   <div className={`w-8 h-8 rounded text-white flex items-center justify-center font-bold ${isConnected ? 'bg-blue-600' : 'bg-slate-400'}`}>L</div>
                   <div>
-                    <h3 className={`font-bold ${isConnected ? 'text-blue-900' : 'text-slate-700'}`}>Left Insole</h3>
+                    <h3 className={`font-bold ${isConnected ? 'text-blue-900' : 'text-slate-700'}`}>{t('profile.leftInsole', 'Left Insole')}</h3>
                     <p className={`text-xs ${isConnected ? 'text-blue-700' : 'text-slate-500'}`}>
-                      {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : 'Disconnected'}
+                      {isConnected ? t('profile.connected', 'Connected') : isConnecting ? t('calibration.connecting', 'Connecting...') : t('calibration.disconnected', 'Disconnected')}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right rtl:text-left">
                   <span className={`font-bold text-sm ${isConnected ? 'text-emerald-600' : 'text-slate-400'}`}>
                     {isConnected ? `${deviceState.leftBattery}%` : '--'}
                   </span>
@@ -120,14 +148,14 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
                 </div>
               </div>
               <div className={`mt-3 pt-3 flex justify-between items-center text-xs border-t ${isConnected ? 'border-blue-100' : 'border-slate-200'}`}>
-                <span className="text-slate-600">Signal: <strong className={isConnected ? 'text-emerald-600' : 'text-slate-400'}>{isConnected ? deviceState.signalQuality : 'N/A'}</strong></span>
+                <span className="text-slate-600">{t('calibration.signal', 'Signal:')} <strong className={isConnected ? 'text-emerald-600' : 'text-slate-400'}>{isConnected ? t('calibration.signalExcellent', 'Excellent') : 'N/A'}</strong></span>
                 {isConnected ? (
                   <button onClick={disconnectSensors} className="text-red-500 hover:underline font-semibold">
-                    Disconnect
+                    {t('calibration.disconnect', 'Disconnect')}
                   </button>
                 ) : (
                   <button onClick={connectSensors} disabled={isConnecting} className="text-blue-600 hover:underline font-semibold">
-                    {isConnecting ? 'Connecting...' : 'Connect'}
+                    {isConnecting ? t('calibration.connecting', 'Connecting...') : t('actions.connect', 'Connect')}
                   </button>
                 )}
               </div>
@@ -139,13 +167,13 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
                 <div className="flex items-center gap-2">
                   <div className={`w-8 h-8 rounded text-white flex items-center justify-center font-bold ${isConnected ? 'bg-blue-600' : 'bg-slate-400'}`}>R</div>
                   <div>
-                    <h3 className={`font-bold ${isConnected ? 'text-blue-900' : 'text-slate-700'}`}>Right Insole</h3>
+                    <h3 className={`font-bold ${isConnected ? 'text-blue-900' : 'text-slate-700'}`}>{t('profile.rightInsole', 'Right Insole')}</h3>
                     <p className={`text-xs ${isConnected ? 'text-blue-700' : 'text-slate-500'}`}>
-                      {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : 'Disconnected'}
+                      {isConnected ? t('profile.connected', 'Connected') : isConnecting ? t('calibration.connecting', 'Connecting...') : t('calibration.disconnected', 'Disconnected')}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right rtl:text-left">
                   <span className={`font-bold text-sm ${isConnected ? 'text-emerald-600' : 'text-slate-400'}`}>
                     {isConnected ? `${deviceState.rightBattery}%` : '--'}
                   </span>
@@ -153,14 +181,14 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
                 </div>
               </div>
               <div className={`mt-3 pt-3 flex justify-between items-center text-xs border-t ${isConnected ? 'border-blue-100' : 'border-slate-200'}`}>
-                <span className="text-slate-600">Signal: <strong className={isConnected ? 'text-emerald-600' : 'text-slate-400'}>{isConnected ? deviceState.signalQuality : 'N/A'}</strong></span>
+                <span className="text-slate-600">{t('calibration.signal', 'Signal:')} <strong className={isConnected ? 'text-emerald-600' : 'text-slate-400'}>{isConnected ? t('calibration.signalExcellent', 'Excellent') : 'N/A'}</strong></span>
                 {isConnected ? (
                   <button onClick={disconnectSensors} className="text-red-500 hover:underline font-semibold">
-                    Disconnect
+                    {t('calibration.disconnect', 'Disconnect')}
                   </button>
                 ) : (
                   <button onClick={connectSensors} disabled={isConnecting} className="text-blue-600 hover:underline font-semibold">
-                    {isConnecting ? 'Connecting...' : 'Connect'}
+                    {isConnecting ? t('calibration.connecting', 'Connecting...') : t('actions.connect', 'Connect')}
                   </button>
                 )}
               </div>
@@ -171,15 +199,15 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
         {/* Middle Column: Calibration Process */}
         <div className="col-span-5 flex flex-col gap-4">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex-1 flex flex-col items-center text-center justify-center">
-            <h2 className="text-lg font-bold text-slate-800 mb-2 w-full text-left">2. Calibrate Sensors</h2>
-            <p className="text-sm text-slate-600 mb-8 w-full text-left">Stand still for 5 seconds in a neutral position (equal weight on both legs).</p>
+            <h2 className="text-lg font-bold text-slate-800 mb-2 w-full text-left rtl:text-right">{t('calibration.step2', '2. Calibrate Sensors')}</h2>
+            <p className="text-sm text-slate-600 mb-8 w-full text-left rtl:text-right">{t('calibration.step2Desc', 'Stand still for 5 seconds in a neutral position (equal weight on both legs).')}</p>
 
             {/* Simulated Live Weight Distribution */}
-            <div className="flex justify-between w-full max-w-sm mb-2 text-sm font-bold text-slate-700">
-              <span>Left 50%</span>
-              <span>Right 50%</span>
+            <div className="flex justify-between w-full max-w-sm mb-2 text-sm font-bold text-slate-700 flex-row">
+              <span>{t('calibration.left50', 'Left 50%')}</span>
+              <span>{t('calibration.right50', 'Right 50%')}</span>
             </div>
-            <div className="w-full max-w-sm h-12 flex rounded-lg overflow-hidden mb-8 bg-slate-100 border border-slate-300">
+            <div className="w-full max-w-sm h-12 flex rounded-lg overflow-hidden mb-8 bg-slate-100 border border-slate-300 flex-row rtl:flex-row-reverse">
               <div className={`h-full transition-all duration-500 ${isCalibrated ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: '50%' }}></div>
               <div className={`h-full transition-all duration-500 ${isCalibrated ? 'bg-emerald-400' : 'bg-blue-400'}`} style={{ width: '50%' }}></div>
             </div>
@@ -194,7 +222,7 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
                 'bg-slate-900 hover:bg-slate-800 text-white'
               }`}
             >
-              {!isConnected ? 'Connecting Sensors...' : isCalibrating ? 'Calibrating...' : isCalibrated ? 'Calibration Complete' : 'Start Calibration'}
+              {!isConnected ? t('calibration.connectingSensors', 'Connecting Sensors...') : isCalibrating ? t('calibration.calibrating', 'Calibrating...') : isCalibrated ? t('calibration.calibrationComplete', 'Calibration Complete') : t('calibration.startCalibration', 'Start Calibration')}
             </button>
 
             {isCalibrated && (
@@ -205,7 +233,7 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
                 }} 
                 className="mt-4 text-xs font-bold text-blue-600 hover:underline"
               >
-                ↻ Recalibrate
+                ↻ {t('calibration.recalibrate', 'Recalibrate')}
               </button>
             )}
           </div>
@@ -214,40 +242,40 @@ export default function ConnectCalibrate({ navigateTo, athleteId }) {
         {/* Right Column: Verification & Proceed */}
         <div className="col-span-3 flex flex-col gap-4">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex-1">
-            <h2 className="text-lg font-bold text-slate-800 mb-4">3. Verify & Check</h2>
+            <h2 className="text-lg font-bold text-slate-800 mb-4">{t('calibration.verifyCheck', '3. Verify & Check')}</h2>
             
             <ul className="space-y-4 mb-8">
               <li className="flex items-center gap-3 text-sm text-slate-700">
-                <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</span>
-                Both sensors connected
+                <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0">✓</span>
+                <span>{t('calibration.checklistBoth', 'Both sensors connected')}</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-700">
-                <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</span>
-                Battery &gt; 20%
+                <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0">✓</span>
+                <span>{t('calibration.checklistBattery', 'Battery > 20%')}</span>
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-700">
-                <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">✓</span>
-                Good signal quality
+                <span className="w-5 h-5 rounded bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold shrink-0">✓</span>
+                <span>{t('calibration.checklistSignal', 'Good signal quality')}</span>
               </li>
               <li className={`flex items-center gap-3 text-sm transition-colors ${isCalibrated ? 'text-slate-700' : 'text-slate-400'}`}>
-                <span className={`w-5 h-5 rounded flex items-center justify-center font-bold ${isCalibrated ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
+                <span className={`w-5 h-5 rounded flex items-center justify-center font-bold shrink-0 ${isCalibrated ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-400'}`}>
                   {isCalibrated ? '✓' : '○'}
                 </span>
-                Static calibration
+                <span>{t('calibration.staticCalibration', 'Static calibration')}</span>
               </li>
             </ul>
 
             {isCalibrated && (
               <div className="mt-auto">
                 <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg mb-4 text-sm text-emerald-800">
-                  <strong>Calibration Successful.</strong><br/>
-                  Sensors are ready for use.
+                  <strong>{t('calibration.successTitle', 'Calibration Successful.')}</strong><br/>
+                  {t('calibration.successDesc', 'Sensors are ready for use.')}
                 </div>
                 <button 
                   onClick={() => navigateTo('ExerciseSetup', { athleteId })}
-                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-colors"
+                  className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-colors flex justify-center items-center gap-2"
                 >
-                  Continue to Exercise Setup →
+                  {t('calibration.continueToSetup', 'Continue to Exercise Setup')} {i18n.dir() === 'rtl' ? '←' : '→'}
                 </button>
               </div>
             )}
