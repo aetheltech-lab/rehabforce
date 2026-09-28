@@ -101,8 +101,16 @@ export default function Login({ navigateTo }) {
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg border border-slate-200">
         
         {/* App Branding */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">REHABFORCE</h1>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img 
+            src="/rehabforce-logo.png" 
+            alt="RehabForce Logo" 
+            className="w-24 h-24 rounded-3xl object-cover shadow-[0_0_25px_rgba(0,229,255,0.3)] mb-4" 
+          />
+          <h1 className="text-4xl font-extrabold tracking-tight">
+            <span className="text-slate-900">Rehab</span>
+            <span className="text-[#00e5ff]">Force</span>
+          </h1>
           <p className="text-xs text-slate-500 uppercase tracking-widest mt-2 font-semibold">{t('dashboard.tagline', 'Measure. Guide. Progress.')}</p>
         </div>
 

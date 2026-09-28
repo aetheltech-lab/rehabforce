@@ -1,7 +1,7 @@
 /**
  * RehabForce Mock Device Adapter
  * Hardware-agnostic simulator for Phase 1 clinical logic validation.
- * Implements strict Data Quality Gating and Simulated Hardware Failures.
+ * Implements strict Data Quality Gating, Simulated Hardware Failures, and Diagnostics.
  */
 class MockDeviceAdapter {
   constructor() {
@@ -22,13 +22,31 @@ class MockDeviceAdapter {
       syncStatus: 'NOT_ASSESSED',    // SYNCED, OUT_OF_SYNC, NOT_ASSESSED
       dataQuality: 'NOT_ASSESSED'    // VALID, INVALID, NOT_ASSESSED
     };
+
+    // Hardware Diagnostics State for Developer Mode[cite: 4, 5]
+    this.diagnosticMetrics = {
+      leftHz: 0,
+      rightHz: 0,
+      syncSkewMs: 0,
+      droppedPackets: 0,
+      dataAgeMs: 0,
+      latencyMs: 0
+    };
+    this.diagnosticLog = [];
   }
 
   /**
-   * Simulates the BLE connection process to bilateral sensors.
+   * Internal logger for the Hardware Diagnostics screen
    */
+  logDiagnostic(message) {
+    const timestamp = new Date().toISOString().split('T')[1].slice(0, -1);
+    this.diagnosticLog.unshift(`[${timestamp}] ${message}`);
+    // Keep log size manageable (latest 50 events)
+    if (this.diagnosticLog.length > 50) this.diagnosticLog.pop();
+  }
+
   async connect() {
-    // Simulate connection delay
+    this.logDiagnostic('Initiating BLE connection to L/R sensors...');
     await new Promise(resolve => setTimeout(resolve, 800));
 
     this.isConnected = true;
@@ -39,16 +57,17 @@ class MockDeviceAdapter {
       rightBattery: 98,
       signalQuality: 'EXCELLENT',
       syncStatus: 'SYNCED',
-      dataQuality: 'NOT_ASSESSED' // Data quality is only assessed during active streaming
+      dataQuality: 'NOT_ASSESSED' 
     };
+
+    this.diagnosticMetrics.droppedPackets = 0;
+    this.logDiagnostic('Connection successful. Battery L:100% R:98%.');
 
     return { success: true, status: this.deviceState };
   }
 
-  /**
-   * Gracefully disconnects and resets the hardware states.
-   */
   async disconnect() {
+    this.logDiagnostic('Disconnecting sensors...');
     this.isConnected = false;
     this.isCalibrated = false;
     this.stopStream();
@@ -62,41 +81,53 @@ class MockDeviceAdapter {
       syncStatus: 'NOT_ASSESSED',
       dataQuality: 'NOT_ASSESSED'
     };
+
+    this.diagnosticMetrics = {
+      leftHz: 0, rightHz: 0, syncSkewMs: 0, droppedPackets: 0, dataAgeMs: 0, latencyMs: 0
+    };
+    this.logDiagnostic('Sensors disconnected safely.');
     
     return { success: true };
   }
 
-  /**
-   * Simulates the static 5-second calibration/zeroing workflow.
-   */
   async calibrate() {
+    this.logDiagnostic('Starting 5-second calibration zeroing sequence...');
     if (this.activeFailure === 'CALIBRATION_FAIL') {
       this.isCalibrated = false;
+      this.logDiagnostic('ERROR: Calibration failed. Sensors unstable.');
       return false;
     }
     
-    // Simulate the 5-second calibration hold
     await new Promise(resolve => setTimeout(resolve, 5000));
     this.isCalibrated = true;
+    this.logDiagnostic('Calibration successful. Sensors zeroed.');
     return true;
   }
 
   /**
-   * High-frequency data stream simulating <=100ms BLE packets.
-   * Enforces the Data Quality Gate before yielding payload to the UI.
+   * High-frequency data stream simulating Moticon OpenGo hardware.
+   * Runs at 50Hz (20ms interval) to validate high-throughput performance[cite: 7].
    */
   startStream(callback) {
     if (this.streamInterval) clearInterval(this.streamInterval);
 
+    this.logDiagnostic('Data stream started at 50 Hz target.');
     let tick = 0;
     
+    // 20ms interval = 50Hz Target
     this.streamInterval = setInterval(() => {
       tick++;
 
-      // Base healthy biomechanical simulation (oscillating around 50/50)
-      let leftLoad = 50 + Math.sin(tick * 0.1) * 20;
-      let rightLoad = 50 - Math.sin(tick * 0.1) * 20;
+      let leftLoad = 50 + Math.sin(tick * 0.05) * 20;
+      let rightLoad = 50 - Math.sin(tick * 0.05) * 20;
       let currentDataQuality = 'VALID';
+
+      // Reset baseline diagnostic metrics for a healthy tick
+      this.diagnosticMetrics.leftHz = 50;
+      this.diagnosticMetrics.rightHz = 50;
+      this.diagnosticMetrics.syncSkewMs = Math.floor(Math.random() * 5); // 0-4ms natural BLE jitter
+      this.diagnosticMetrics.dataAgeMs = 20;
+      this.diagnosticMetrics.latencyMs = 45 + Math.floor(Math.random() * 15); // 45-60ms baseline latency
 
       // ==========================================
       // SIMULATED HARDWARE FAILURE INJECTION
@@ -106,6 +137,8 @@ class MockDeviceAdapter {
           leftLoad = 0;
           this.deviceState.leftConnected = false;
           this.deviceState.signalQuality = 'POOR';
+          this.diagnosticMetrics.leftHz = 0;
+          this.diagnosticMetrics.droppedPackets++;
           currentDataQuality = 'INVALID';
           break;
           
@@ -113,22 +146,27 @@ class MockDeviceAdapter {
           rightLoad = 0;
           this.deviceState.rightConnected = false;
           this.deviceState.signalQuality = 'POOR';
+          this.diagnosticMetrics.rightHz = 0;
+          this.diagnosticMetrics.droppedPackets++;
           currentDataQuality = 'INVALID';
           break;
           
         case 'STALE_DATA':
-          // Freeze the load values to simulate dropped packets
           leftLoad = 52; 
           rightLoad = 48;
           this.deviceState.signalQuality = 'POOR';
+          this.diagnosticMetrics.leftHz = 12; // Dropping frames
+          this.diagnosticMetrics.rightHz = 12;
+          this.diagnosticMetrics.dataAgeMs += 20; // Age climbs indefinitely
+          this.diagnosticMetrics.droppedPackets++;
           currentDataQuality = 'INVALID';
           break;
           
         case 'SYNC_ERROR':
-          // Simulate L/R time skew causing artificial asymmetry
           this.deviceState.syncStatus = 'OUT_OF_SYNC';
           leftLoad = Math.random() * 100;
           rightLoad = Math.random() * 100;
+          this.diagnosticMetrics.syncSkewMs = 150 + Math.floor(Math.random() * 100); // 150-250ms severe skew
           currentDataQuality = 'INVALID';
           break;
           
@@ -141,53 +179,44 @@ class MockDeviceAdapter {
           break;
       }
 
-      // ==========================================
-      // CLINICAL DATA QUALITY GATE
-      // Connection OK + Calibration OK + Sync OK -> VALID
-      // ==========================================
       if (!this.isConnected || !this.isCalibrated) {
         currentDataQuality = 'NOT_ASSESSED';
       }
 
       this.deviceState.dataQuality = currentDataQuality;
 
-      // Construct the normalized payload conforming to RehabForce internal schema
+      // Construct payload conforming to RehabForce internal schema
       const payload = {
-        timestamp_sensor: Date.now(),
+        timestamp_sensor: Date.now() - this.diagnosticMetrics.latencyMs,
         leftLoadPct: Math.max(0, Math.round(leftLoad)),
         rightLoadPct: Math.max(0, Math.round(rightLoad)),
         dataQuality: this.deviceState.dataQuality,
         syncStatus: this.deviceState.syncStatus,
         signalQuality: this.deviceState.signalQuality,
         leftConnected: this.deviceState.leftConnected,
-        rightConnected: this.deviceState.rightConnected
+        rightConnected: this.deviceState.rightConnected,
+        // Hidden diagnostics payload for the Developer Mode[cite: 4]
+        diagnostics: { ...this.diagnosticMetrics, log: [...this.diagnosticLog] }
       };
 
-      // Yield normalized payload to the application
       callback(payload);
-
-    }, 100); // 100ms simulation loop to mimic target hardware capability
+    }, 20); 
   }
 
-  /**
-   * Safely kills the active data stream.
-   */
   stopStream() {
     if (this.streamInterval) {
       clearInterval(this.streamInterval);
       this.streamInterval = null;
+      this.logDiagnostic('Data stream stopped.');
     }
   }
 
-  /**
-   * Developer utility to trigger Nikos's requested testing scenarios on the fly.
-   * @param {string} eventType - 'NONE', 'LEFT_DISCONNECT', 'RIGHT_DISCONNECT', 'SYNC_ERROR', 'STALE_DATA', 'CALIBRATION_FAIL'
-   */
   triggerSimulationEvent(eventType) {
-    console.warn(`[Hardware Simulator] Injecting Failure Event: ${eventType}`);
-    this.activeFailure = eventType;
+    if (this.activeFailure !== eventType) {
+      this.logDiagnostic(`SIMULATION EVENT INJECTED: ${eventType}`);
+      this.activeFailure = eventType;
+    }
   }
 }
 
-// Export a single instance to act as our centralized hardware singleton
 export const deviceAdapter = new MockDeviceAdapter();

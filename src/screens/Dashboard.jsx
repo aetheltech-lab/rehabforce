@@ -66,9 +66,19 @@ export default function Dashboard({ navigateTo, clinicianId }) {
       
       {/* Clinician Header - Now dynamically driven by the login identity */}
       <header className="flex justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">REHABFORCE</h1>
-          <p className="text-xs text-slate-500 uppercase tracking-widest mt-1 font-semibold">{t('dashboard.tagline', 'Measure. Guide. Progress.')}</p>
+        <div className="flex items-center gap-4">
+          <img 
+            src="/rehabforce-logo.png" 
+            alt="RehabForce Logo" 
+            className="w-12 h-12 rounded-xl object-cover shadow-[0_0_10px_rgba(0,229,255,0.3)]" 
+          />
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight">
+              <span className="text-slate-900">Rehab</span>
+              <span className="text-[#00e5ff]">Force</span>
+            </h1>
+            <p className="text-xs text-slate-500 uppercase tracking-widest mt-1 font-semibold">{t('dashboard.tagline', 'Measure. Guide. Progress.')}</p>
+          </div>
         </div>
         <div className="flex items-center gap-4">
           
