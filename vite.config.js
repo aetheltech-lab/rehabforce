@@ -24,17 +24,12 @@ export default defineConfig({
         icons: [
           {
             src: 'rehabforce-logo.png',
-            sizes: '192x192',
+            sizes: '655x658',
             type: 'image/png'
           },
           {
             src: 'rehabforce-logo.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'rehabforce-logo.png',
-            sizes: '512x512',
+            sizes: '655x658',
             type: 'image/png',
             purpose: 'any maskable'
           }
