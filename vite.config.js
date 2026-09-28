@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      // Cache all vital assets so the app works offline
+      includeAssets: ['rehabforce-logo.png'], // Explicitly caches the public asset for the install prompt
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       },
@@ -17,10 +17,10 @@ export default defineConfig({
         name: 'RehabForce Clinical',
         short_name: 'RehabForce',
         description: 'Sensor-Agnostic Rehabilitation and Sports-Performance Platform',
-        theme_color: '#0f172a', // Tailwind slate-900 (matches sidebar)
-        background_color: '#f8fafc', // Tailwind slate-50 (matches background)
+        theme_color: '#0f172a',
+        background_color: '#f8fafc',
         display: 'standalone',
-        orientation: 'landscape', // Force iPad landscape orientation
+        orientation: 'landscape',
         icons: [
           {
             src: 'rehabforce-logo.png',
