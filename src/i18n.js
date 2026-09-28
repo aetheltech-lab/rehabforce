@@ -8,12 +8,35 @@ const resources = {
     translation: {
       nav: {
         dashboard: "Dashboard",
+        directory: "Patient Directory",
         athletes: "Athletes",
         athleteProfile: "Athlete Profile",
+        activeSession: "Active Session",
+        calibrate: "1. Calibrate",
+        setup: "2. Setup",
+        baseline: "3. Baseline",
+        liveTraining: "4. Live Training",
+        results: "5. Results",
+        decision: "6. Decision",
         settings: "Settings",
         logout: "Logout",
         back: "Back",
-        backToAthletes: "← Back to Athletes"
+        backToAthletes: "← Back to Athletes",
+        diagnostics: "Diagnostics",
+        diagnosticsTitle: "Tap 5 times to access Hardware Telemetry"
+      },
+      directory: {
+        subtitle: "Manage active and past patient records",
+        search: "Search patients...",
+        state: "Clinical State",
+        noResults: "No patients found matching your search.",
+        edit: "Edit Profile",
+        delete: "Delete Patient",
+        editTitle: "Edit Patient Profile",
+        saveChanges: "Save Changes",
+        deleteConfirmTitle: "Delete Patient Record?",
+        deleteConfirmText: "This action will permanently remove the patient and all associated session data. This cannot be undone.",
+        confirmDelete: "Yes, Delete Patient"
       },
       login: {
         errorInvalidPin: "Invalid PIN for the selected clinician. Please try again.",
@@ -59,7 +82,9 @@ const resources = {
         right: "Right (R)",
         left: "Left (L)",
         cancel: "Cancel",
-        saveAthlete: "Save Athlete"
+        saveAthlete: "Save Athlete",
+        deleteSession: "Delete Session",
+        deleteSessionConfirm: "Are you sure you want to delete this session?"
       },
       settings: {
         title: "Settings",
@@ -419,12 +444,35 @@ const resources = {
     translation: {
       nav: {
         dashboard: "Πίνακας Ελέγχου",
+        directory: "Μητρώο Ασθενών",
         athletes: "Αθλητές",
         athleteProfile: "Προφίλ Αθλητή",
+        activeSession: "Ενεργή Συνεδρία",
+        calibrate: "1. Βαθμονόμηση",
+        setup: "2. Ρύθμιση",
+        baseline: "3. Αξιολόγηση",
+        liveTraining: "4. Ζωντανή Προπόνηση",
+        results: "5. Αποτελέσματα",
+        decision: "6. Απόφαση",
         settings: "Ρυθμίσεις",
         logout: "Αποσύνδεση",
         back: "Πίσω",
-        backToAthletes: "← Επιστροφή στους Αθλητές"
+        backToAthletes: "← Επιστροφή στους Αθλητές",
+        diagnostics: "Διαγνωστικά",
+        diagnosticsTitle: "Πατήστε 5 φορές για πρόσβαση στην Τηλεμετρία"
+      },
+      directory: {
+        subtitle: "Διαχείριση ενεργών και παλαιότερων αρχείων ασθενών",
+        search: "Αναζήτηση ασθενών...",
+        state: "Κλινική Κατάσταση",
+        noResults: "Δεν βρέθηκαν ασθενείς που να ταιριάζουν στην αναζήτηση.",
+        edit: "Επεξεργασία Προφίλ",
+        delete: "Διαγραφή Ασθενή",
+        editTitle: "Επεξεργασία Προφίλ Ασθενή",
+        saveChanges: "Αποθήκευση Αλλαγών",
+        deleteConfirmTitle: "Διαγραφή Αρχείου Ασθενή;",
+        deleteConfirmText: "Αυτή η ενέργεια θα διαγράψει οριστικά τον ασθενή και όλα τα σχετικά δεδομένα συνεδριών. Δεν μπορεί να αναιρεθεί.",
+        confirmDelete: "Ναι, Διαγραφή Ασθενή"
       },
       login: {
         errorInvalidPin: "Μη έγκυρο PIN για τον επιλεγμένο κλινικό. Παρακαλώ προσπαθήστε ξανά.",
@@ -470,7 +518,9 @@ const resources = {
         right: "Δεξιά (Δ)",
         left: "Αριστερά (Α)",
         cancel: "Ακύρωση",
-        saveAthlete: "Αποθήκευση Αθλητή"
+        saveAthlete: "Αποθήκευση Αθλητή",
+        deleteSession: "Διαγραφή Συνεδρίας",
+        deleteSessionConfirm: "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτή τη συνεδρία;"
       },
       settings: {
         title: "Ρυθμίσεις",
@@ -830,12 +880,35 @@ const resources = {
     translation: {
       nav: {
         dashboard: "لوحة القيادة",
+        directory: "دليل المرضى",
         athletes: "الرياضيون",
         athleteProfile: "الملف الشخصي",
+        activeSession: "الجلسة النشطة",
+        calibrate: "1. معايرة",
+        setup: "2. إعداد",
+        baseline: "3. التقييم الأساسي",
+        liveTraining: "4. التدريب المباشر",
+        results: "5. النتائج",
+        decision: "6. قرار",
         settings: "الإعدادات",
         logout: "تسجيل خروج",
         back: "رجوع",
-        backToAthletes: "← العودة إلى الرياضيين"
+        backToAthletes: "← العودة إلى الرياضيين",
+        diagnostics: "التشخيص",
+        diagnosticsTitle: "اضغط 5 مرات للوصول إلى القياس عن بعد للأجهزة"
+      },
+      directory: {
+        subtitle: "إدارة سجلات المرضى النشطين والسابقين",
+        search: "البحث عن مرضى...",
+        state: "الحالة السريرية",
+        noResults: "لم يتم العثور على مرضى يطابقون بحثك.",
+        edit: "تعديل الملف الشخصي",
+        delete: "حذف المريض",
+        editTitle: "تعديل ملف المريض",
+        saveChanges: "حفظ التغييرات",
+        deleteConfirmTitle: "حذف سجل المريض؟",
+        deleteConfirmText: "سيؤدي هذا الإجراء إلى إزالة المريض بشكل دائم وجميع بيانات الجلسة المرتبطة به. لا يمكن التراجع عن هذا.",
+        confirmDelete: "نعم، احذف المريض"
       },
       login: {
         errorInvalidPin: "رقم التعريف الشخصي غير صالح للطبيب المحدد. يرجى المحاولة مرة أخرى.",
@@ -881,7 +954,9 @@ const resources = {
         right: "اليمين (R)",
         left: "اليسار (L)",
         cancel: "إلغاء",
-        saveAthlete: "حفظ الرياضي"
+        saveAthlete: "حفظ الرياضي",
+        deleteSession: "حذف الجلسة",
+        deleteSessionConfirm: "هل أنت متأكد أنك تريد حذف هذه الجلسة؟"
       },
       settings: {
         title: "الإعدادات",

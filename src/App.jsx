@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Activity, LayoutDashboard, UserCircle, Target, Ruler, Zap, BarChart2, ClipboardCheck, Settings as SettingsIcon, LogOut, Terminal } from 'lucide-react';
+import { Activity, LayoutDashboard, UserCircle, Target, Ruler, Zap, BarChart2, ClipboardCheck, Settings as SettingsIcon, LogOut, Terminal, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Real clinical screens
 import Dashboard from './screens/Dashboard';
@@ -13,12 +14,15 @@ import RecommendationDecision from './screens/RecommendationDecision';
 import Login from './screens/Login';
 import Settings from './screens/Settings';
 import HardwareDiagnostics from './screens/HardwareDiagnostics';
+import AthleteDirectory from './screens/AthleteDirectory';
 
 /**
  * Main Application Component for RehabForce
  * iPad-first design tailored for Clinician control.
  */
 export default function App() {
+  const { t } = useTranslation();
+  
   // MVP Security Gateway: Start at Login screen
   const [currentScreen, setCurrentScreen] = useState('Login');
   const [activeAthleteId, setActiveAthleteId] = useState(null);
@@ -46,6 +50,8 @@ export default function App() {
         return <Login navigateTo={navigateTo} />;
       case 'Dashboard': 
         return <Dashboard navigateTo={navigateTo} clinicianId={activeClinicianId} />;
+      case 'AthleteDirectory': 
+        return <AthleteDirectory navigateTo={navigateTo} clinicianId={activeClinicianId} />;
       case 'AthleteProfile': 
         return <AthleteProfile navigateTo={navigateTo} athleteId={activeAthleteId} />;
       case 'ConnectCalibrate': 
@@ -109,26 +115,27 @@ export default function App() {
 
         {/* NAVIGATION LINKS */}
         <div className="flex-1 flex flex-col gap-2 p-4 overflow-y-auto">
-          <NavItem icon={<LayoutDashboard size={18} />} label="Dashboard" target="Dashboard" current={currentScreen} setScreen={navigateTo} />
-          <NavItem icon={<UserCircle size={18} />} label="Athlete Profile" target="AthleteProfile" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<LayoutDashboard size={18} />} label={t('nav.dashboard', 'Dashboard')} target="Dashboard" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<Users size={18} />} label={t('nav.directory', 'Patient Directory')} target="AthleteDirectory" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<UserCircle size={18} />} label={t('nav.athleteProfile', 'Athlete Profile')} target="AthleteProfile" current={currentScreen} setScreen={navigateTo} />
           
-          <div className="mt-4 mb-2 px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">Active Session</div>
+          <div className="mt-4 mb-2 px-3 text-[10px] font-bold tracking-widest text-slate-500 uppercase">{t('nav.activeSession', 'Active Session')}</div>
           
-          <NavItem icon={<Zap size={18} />} label="1. Calibrate" target="ConnectCalibrate" current={currentScreen} setScreen={navigateTo} />
-          <NavItem icon={<Target size={18} />} label="2. Setup" target="ExerciseSetup" current={currentScreen} setScreen={navigateTo} />
-          <NavItem icon={<Ruler size={18} />} label="3. Baseline" target="BaselineAssessment" current={currentScreen} setScreen={navigateTo} />
-          <NavItem icon={<Activity size={18} />} label="4. Live Training" target="LiveTraining" current={currentScreen} setScreen={navigateTo} />
-          <NavItem icon={<BarChart2 size={18} />} label="5. Results" target="SessionResults" current={currentScreen} setScreen={navigateTo} />
-          <NavItem icon={<ClipboardCheck size={18} />} label="6. Decision" target="RecommendationDecision" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<Zap size={18} />} label={t('nav.calibrate', '1. Calibrate')} target="ConnectCalibrate" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<Target size={18} />} label={t('nav.setup', '2. Setup')} target="ExerciseSetup" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<Ruler size={18} />} label={t('nav.baseline', '3. Baseline')} target="BaselineAssessment" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<Activity size={18} />} label={t('nav.liveTraining', '4. Live Training')} target="LiveTraining" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<BarChart2 size={18} />} label={t('nav.results', '5. Results')} target="SessionResults" current={currentScreen} setScreen={navigateTo} />
+          <NavItem icon={<ClipboardCheck size={18} />} label={t('nav.decision', '6. Decision')} target="RecommendationDecision" current={currentScreen} setScreen={navigateTo} />
           
           <div className="mt-auto pt-4 border-t border-slate-800">
-            <NavItem icon={<SettingsIcon size={18} />} label="Settings" target="Settings" current={currentScreen} setScreen={navigateTo} />
+            <NavItem icon={<SettingsIcon size={18} />} label={t('nav.settings', 'Settings')} target="Settings" current={currentScreen} setScreen={navigateTo} />
             <button
               onClick={() => navigateTo('Login')}
               className="w-full flex items-center gap-3 px-3 py-3 mt-2 rounded-lg text-sm font-bold text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-all duration-200"
             >
               <LogOut size={18} />
-              Logout
+              {t('nav.logout', 'Logout')}
             </button>
             
             {/* DEVELOPER DIAGNOSTICS (5-TAP TRIGGER) */}
@@ -142,10 +149,10 @@ export default function App() {
                 }
               }}
               className="w-full flex items-center gap-3 px-3 py-3 mt-4 rounded-lg text-sm font-bold text-slate-500 bg-slate-800/40 hover:bg-slate-700 hover:text-slate-300 border border-slate-700/50 transition-all duration-200 select-none"
-              title="Tap 5 times to access Hardware Telemetry"
+              title={t('nav.diagnosticsTitle', 'Tap 5 times to access Hardware Telemetry')}
             >
               <Terminal size={18} />
-              Diagnostics
+              {t('nav.diagnostics', 'Diagnostics')}
             </button>
           </div>
         </div>
