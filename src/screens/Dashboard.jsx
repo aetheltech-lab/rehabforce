@@ -68,7 +68,7 @@ export default function Dashboard({ navigateTo, clinicianId }) {
       <header className="flex justify-between items-center mb-8 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
         <div className="flex items-center gap-4">
           <img 
-            src="/rehabforce-logo.png" 
+            src="./rehabforce-logo.png" 
             alt="RehabForce Logo" 
             className="w-12 h-12 rounded-xl object-cover shadow-[0_0_10px_rgba(0,229,255,0.3)]" 
           />

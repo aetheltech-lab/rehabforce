@@ -97,7 +97,7 @@ export default function App() {
         {/* LOGO & BRANDING */}
         <div className="flex items-center gap-3 p-6 border-b border-slate-800">
           <img 
-            src="/rehabforce-logo.png" 
+            src="./rehabforce-logo.png" 
             alt="RehabForce Logo" 
             className="w-10 h-10 rounded-xl object-cover shadow-[0_0_15px_rgba(0,229,255,0.3)]" 
           />

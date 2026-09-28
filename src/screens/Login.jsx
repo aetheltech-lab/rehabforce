@@ -103,7 +103,7 @@ export default function Login({ navigateTo }) {
         {/* App Branding */}
         <div className="text-center mb-8 flex flex-col items-center">
           <img 
-            src="/rehabforce-logo.png" 
+            src="./rehabforce-logo.png" 
             alt="RehabForce Logo" 
             className="w-24 h-24 rounded-3xl object-cover shadow-[0_0_25px_rgba(0,229,255,0.3)] mb-4" 
           />
