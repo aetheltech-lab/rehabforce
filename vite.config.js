@@ -9,7 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['rehabforce-logo.png'], // Explicitly caches the public asset for the install prompt
+      includeAssets: ['rehabforce-logo_192-192.png', 'rehabforce-logo_512-512.png'], 
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}']
       },
@@ -23,13 +23,14 @@ export default defineConfig({
         orientation: 'landscape',
         icons: [
           {
-            src: 'rehabforce-logo.png',
-            sizes: '655x658',
-            type: 'image/png'
+            src: 'rehabforce-logo_192-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: 'rehabforce-logo.png',
-            sizes: '655x658',
+            src: 'rehabforce-logo_512-512.png',
+            sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'
           }
