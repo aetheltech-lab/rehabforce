@@ -133,6 +133,29 @@ export const storageService = {
   },
 
   /**
+   * Permanently deletes an athlete and cascades the deletion to all associated sessions.
+   */
+  deleteAthlete(athleteId) {
+    try {
+      // 1. Remove the athlete
+      const athletes = this.getAthletes();
+      const filteredAthletes = athletes.filter(a => a.id !== athleteId);
+      localStorage.setItem(STORAGE_KEYS.ATHLETES, JSON.stringify(filteredAthletes));
+
+      // 2. Cascade delete all sessions tied to this athlete
+      const sessions = this.getSessions();
+      const filteredSessions = sessions.filter(s => s.athleteId !== athleteId);
+      localStorage.setItem(STORAGE_KEYS.SESSIONS, JSON.stringify(filteredSessions));
+
+      this.logAudit('DELETE_ATHLETE', `Permanently deleted athlete ${athleteId} and their associated sessions`);
+      return true;
+    } catch (error) {
+      console.error("Failed to delete athlete and sessions:", error);
+      return false;
+    }
+  },
+
+  /**
    * Retrieves the full session history.
    */
   getSessions() {

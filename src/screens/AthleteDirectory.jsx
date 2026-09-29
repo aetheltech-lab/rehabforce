@@ -1,7 +1,121 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { storageService } from '../services/storageService';
 import { useTranslation } from 'react-i18next';
-import { Search, Edit, Trash2, UserPlus, AlertTriangle } from 'lucide-react';
+import { Search, Edit, Trash2, UserPlus, AlertTriangle, ChevronDown, Check, X } from 'lucide-react';
+
+const DIAGNOSIS_OPTIONS = {
+  Knee: [
+    'ACL Injury / Reconstruction', 'PCL Injury / Reconstruction', 'MCL Injury', 'LCL Injury',
+    'Meniscal Injury / Repair', 'Patellofemoral Pain', 'Patellar Tendinopathy', 'Knee Osteoarthritis',
+    'Chondral / Osteochondral Injury', 'Post-operative Knee', 'Knee Sprain', 'Other / Custom Diagnosis'
+  ],
+  Hip: [
+    'Hip Osteoarthritis', 'Femoroacetabular Impingement (FAI)', 'Hip Labral Injury', 'Gluteal Tendinopathy',
+    'Greater Trochanteric Pain Syndrome', 'Adductor Injury', 'Hip Flexor Injury', 'Hamstring Injury',
+    'Post-operative Hip', 'Hip Sprain / Strain', 'Other / Custom Diagnosis'
+  ],
+  Ankle: [
+    'Lateral Ankle Sprain', 'Medial Ankle Sprain', 'Syndesmosis / High Ankle Sprain', 'Achilles Tendinopathy',
+    'Achilles Tendon Rupture / Repair', 'Ankle Instability', 'Ankle Osteoarthritis', 'Ankle Fracture / Post-operative',
+    'Anterior Ankle Impingement', 'Posterior Ankle Impingement', 'Other / Custom Diagnosis'
+  ],
+  Foot: [
+    'Plantar Fasciopathy', 'Metatarsalgia', 'Stress Fracture / Bone Stress Injury', 'Metatarsal Fracture',
+    'Lisfranc Injury', 'Hallux Valgus', 'Hallux Rigidus', 'Posterior Tibial Tendon Dysfunction',
+    'Peroneal Tendinopathy', 'Midfoot / Forefoot Injury', 'Post-operative Foot', 'Other / Custom Diagnosis'
+  ]
+};
+
+const DiagnosisSelector = ({ region, value, onChange, t }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const dropdownRef = useRef(null);
+
+  const options = DIAGNOSIS_OPTIONS[region] || [];
+  const filteredOptions = options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase()));
+  const selectedItems = value ? value.split(', ').filter(Boolean) : [];
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const toggleItem = (item) => {
+    const newItems = selectedItems.includes(item) 
+      ? selectedItems.filter(i => i !== item) 
+      : [...selectedItems, item];
+    onChange(newItems.join(', '));
+  };
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div 
+        className="w-full p-2 border border-slate-300 rounded-lg text-sm font-semibold bg-white flex justify-between items-center cursor-pointer min-h-[46px]"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex-1 flex flex-wrap gap-1.5 pr-2">
+          {selectedItems.length > 0 ? (
+            selectedItems.map((item, idx) => (
+              <span key={idx} className="bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-bold px-2 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
+                {t(`diagnosis.${item.replace(/[^a-zA-Z0-9]/g, '')}`, item)}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleItem(item);
+                  }}
+                  className="hover:bg-cyan-200 hover:text-cyan-900 text-cyan-600 rounded-full cursor-pointer transition-colors"
+                  title={t('actions.remove', 'Remove')}
+                >
+                  <X size={12} strokeWidth={3} />
+                </div>
+              </span>
+            ))
+          ) : (
+            <span className="text-slate-400 p-1">{t('dashboard.selectDiagnosis', 'Select diagnosis...')}</span>
+          )}
+        </div>
+        <ChevronDown size={16} className="text-slate-400 flex-shrink-0" />
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-xl max-h-60 flex flex-col">
+          <div className="p-2 border-b border-slate-100">
+            <input
+              type="text"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded text-xs font-semibold focus:outline-none focus:border-cyan-500"
+              placeholder={t('dashboard.searchDiagnosis', 'Search...')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div className="overflow-y-auto p-1">
+            {filteredOptions.length === 0 ? (
+              <div className="p-3 text-xs text-slate-500 text-center">{t('dashboard.noOptions', 'No options found')}</div>
+            ) : (
+              filteredOptions.map(opt => {
+                const isSelected = selectedItems.includes(opt);
+                return (
+                  <div
+                    key={opt}
+                    className={`flex items-center justify-between p-2.5 hover:bg-slate-50 cursor-pointer rounded text-sm ${isSelected ? 'font-bold text-cyan-700 bg-cyan-50' : 'font-medium text-slate-700'}`}
+                    onClick={(e) => { e.stopPropagation(); toggleItem(opt); }}
+                  >
+                    <span className="truncate">{t(`diagnosis.${opt.replace(/[^a-zA-Z0-9]/g, '')}`, opt)}</span>
+                    {isSelected && <Check size={16} className="text-cyan-600 flex-shrink-0" />}
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function AthleteDirectory({ navigateTo, clinicianId }) {
   const { t } = useTranslation();
@@ -17,11 +131,11 @@ export default function AthleteDirectory({ navigateTo, clinicianId }) {
   const [latestSessionsMap, setLatestSessionsMap] = useState({});
   
   const [editingAthlete, setEditingAthlete] = useState({
-    id: '', name: '', age: '', sport: '', position: '', region: 'Knee', side: 'Right (R)', diagnosis: '', state: 'REHAB', compliance: 100
+    id: '', name: '', age: '', sport: '', position: '', region: 'Knee', side: 'Right (R)', diagnosis: '', customDiagnosis: '', state: 'REHAB', compliance: 100
   });
 
   const [newAthlete, setNewAthlete] = useState({
-    name: '', age: '', sport: '', position: '', region: 'Knee', side: 'Right (R)', diagnosis: '', state: 'REHAB', week: 1
+    name: '', age: '', sport: '', position: '', region: 'Knee', side: 'Right (R)', diagnosis: '', customDiagnosis: '', state: 'REHAB', week: 1
   });
 
   const loadDirectory = () => {
@@ -333,10 +447,11 @@ export default function AthleteDirectory({ navigateTo, clinicianId }) {
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('dashboard.regionSide', 'Region & Side')}</label>
                   <div className="flex gap-2">
-                    <select value={newAthlete.region} onChange={e => setNewAthlete({...newAthlete, region: e.target.value})} className="w-1/2 p-3 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                    <select value={newAthlete.region} onChange={e => setNewAthlete({...newAthlete, region: e.target.value, diagnosis: ''})} className="w-1/2 p-3 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
                       <option value="Knee">{t('dashboard.knee', 'Knee')}</option>
-                      <option value="Ankle">{t('dashboard.ankle', 'Ankle')}</option>
                       <option value="Hip">{t('dashboard.hip', 'Hip')}</option>
+                      <option value="Ankle">{t('dashboard.ankle', 'Ankle')}</option>
+                      <option value="Foot">{t('dashboard.foot', 'Foot')}</option>
                     </select>
                     <select value={newAthlete.side} onChange={e => setNewAthlete({...newAthlete, side: e.target.value})} className="w-1/2 p-3 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
                       <option value="Right (R)">{t('dashboard.right', 'Right (R)')}</option>
@@ -347,8 +462,28 @@ export default function AthleteDirectory({ navigateTo, clinicianId }) {
 
                 <div className="col-span-2 sm:col-span-1">
                   <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('dashboard.diagnosis', 'Diagnosis')}</label>
-                  <input required type="text" value={newAthlete.diagnosis} onChange={e => setNewAthlete({...newAthlete, diagnosis: e.target.value})} className="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold" placeholder="e.g. ACL Reconstruction" />
+                  <DiagnosisSelector 
+                    region={newAthlete.region} 
+                    value={newAthlete.diagnosis} 
+                    onChange={(val) => setNewAthlete({...newAthlete, diagnosis: val})} 
+                    t={t} 
+                  />
                 </div>
+
+                {/* Conditional Custom Diagnosis Input */}
+                {newAthlete.diagnosis.includes('Other / Custom Diagnosis') && (
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('dashboard.customDiagnosis', 'Custom Diagnosis')}</label>
+                    <input 
+                      required 
+                      type="text" 
+                      value={newAthlete.customDiagnosis} 
+                      onChange={e => setNewAthlete({...newAthlete, customDiagnosis: e.target.value})} 
+                      className="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold focus:border-cyan-500 focus:outline-none bg-amber-50" 
+                      placeholder={t('dashboard.enterCustom', 'Please describe the custom diagnosis...')} 
+                    />
+                  </div>
+                )}
 
                 <div className="col-span-2 flex justify-end gap-4 mt-4 pt-6 border-t border-slate-100">
                   <button type="button" onClick={() => setIsSessionModalOpen(false)} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-800 transition-colors">
@@ -399,10 +534,11 @@ export default function AthleteDirectory({ navigateTo, clinicianId }) {
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('dashboard.regionSide', 'Region & Side')}</label>
                 <div className="flex gap-2">
-                  <select value={editingAthlete.region} onChange={e => setEditingAthlete({...editingAthlete, region: e.target.value})} className="w-1/2 p-3 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
+                  <select value={editingAthlete.region} onChange={e => setEditingAthlete({...editingAthlete, region: e.target.value, diagnosis: ''})} className="w-1/2 p-3 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
                     <option value="Knee">{t('dashboard.knee', 'Knee')}</option>
-                    <option value="Ankle">{t('dashboard.ankle', 'Ankle')}</option>
                     <option value="Hip">{t('dashboard.hip', 'Hip')}</option>
+                    <option value="Ankle">{t('dashboard.ankle', 'Ankle')}</option>
+                    <option value="Foot">{t('dashboard.foot', 'Foot')}</option>
                   </select>
                   <select value={editingAthlete.side} onChange={e => setEditingAthlete({...editingAthlete, side: e.target.value})} className="w-1/2 p-3 border border-slate-300 rounded-lg text-sm font-semibold bg-white">
                     <option value="Right (R)">{t('dashboard.right', 'Right (R)')}</option>
@@ -413,8 +549,28 @@ export default function AthleteDirectory({ navigateTo, clinicianId }) {
 
               <div className="col-span-2 sm:col-span-1">
                 <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('dashboard.diagnosis', 'Diagnosis')}</label>
-                <input required type="text" value={editingAthlete.diagnosis} onChange={e => setEditingAthlete({...editingAthlete, diagnosis: e.target.value})} className="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold" />
+                <DiagnosisSelector 
+                  region={editingAthlete.region} 
+                  value={editingAthlete.diagnosis} 
+                  onChange={(val) => setEditingAthlete({...editingAthlete, diagnosis: val})} 
+                  t={t} 
+                />
               </div>
+
+              {/* Conditional Custom Diagnosis Input */}
+              {editingAthlete.diagnosis.includes('Other / Custom Diagnosis') && (
+                <div className="col-span-2">
+                  <label className="block text-xs font-bold text-slate-500 uppercase mb-2">{t('dashboard.customDiagnosis', 'Custom Diagnosis')}</label>
+                  <input 
+                    required 
+                    type="text" 
+                    value={editingAthlete.customDiagnosis} 
+                    onChange={e => setEditingAthlete({...editingAthlete, customDiagnosis: e.target.value})} 
+                    className="w-full p-3 border border-slate-300 rounded-lg text-sm font-semibold focus:border-cyan-500 focus:outline-none bg-amber-50" 
+                    placeholder={t('dashboard.enterCustom', 'Please describe the custom diagnosis...')} 
+                  />
+                </div>
+              )}
 
               <div className="col-span-2 flex justify-end gap-4 mt-4 pt-6 border-t border-slate-100">
                 <button type="button" onClick={() => setIsEditing(false)} className="px-6 py-3 font-bold text-slate-500 hover:text-slate-800 transition-colors">
